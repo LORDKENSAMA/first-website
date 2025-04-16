@@ -26,19 +26,22 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>用户注册</h1>
-  <input type="text" id="nickname" placeholder="请输入昵称">
+  <h1>欢迎来到 Kensama 网站</h1>
+  <p>请输入昵称和密码注册或登录</p>
+  <input type="text" id="nickname" placeholder="昵称（会作为邮箱）">
   <br>
-  <input type="password" id="password" placeholder="请输入密码">
+  <input type="password" id="password" placeholder="密码">
   <br>
   <button onclick="register()">注册</button>
+  <button onclick="login()">登录</button>
+  <p id="message"></p>
 
   <script>
-    // Firebase 配置
     const firebaseConfig = {
       apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
       authDomain: "kensamawebsite.firebaseapp.com",
@@ -49,26 +52,42 @@
       measurementId: "G-CVL61HZMY7"
     };
 
-    // 初始化 Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    document.addEventListener("DOMContentLoaded", () => {
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
 
-    // 注册函数
-    function register() {
-      const nickname = document.getElementById("nickname").value;
-      const password = document.getElementById("password").value;
-      const email = `${nickname}@kensama.com`; // 构造一个邮箱
+      window.register = function () {
+        const nickname = document.getElementById("nickname").value.trim();
+        const password = document.getElementById("password").value;
+        const email = `${nickname}@kensama.com`;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          alert("注册成功！");
-          console.log(userCredential.user);
-        })
-        .catch(error => {
-          alert("注册失败: " + error.message);
-          console.error(error);
-        });
-    }
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(userCredential => {
+            document.getElementById("message").textContent = "✅ 注册成功！";
+            console.log(userCredential.user);
+          })
+          .catch(error => {
+            document.getElementById("message").textContent = "❌ 注册失败：" + error.message;
+            console.error(error);
+          });
+      };
+
+      window.login = function () {
+        const nickname = document.getElementById("nickname").value.trim();
+        const password = document.getElementById("password").value;
+        const email = `${nickname}@kensama.com`;
+
+        auth.signInWithEmailAndPassword(email, password)
+          .then(userCredential => {
+            document.getElementById("message").textContent = "✅ 登录成功！欢迎 " + nickname;
+            console.log(userCredential.user);
+          })
+          .catch(error => {
+            document.getElementById("message").textContent = "❌ 登录失败：" + error.message;
+            console.error(error);
+          });
+      };
+    });
   </script>
 </body>
 </html>
