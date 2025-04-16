@@ -2,19 +2,20 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>我的第一个网页</title>
+  <title>交互效果示例</title>
   <style>
     body {
-      background-color: #f2f2f2;
+      background-color: #000;
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 50px;
+      color: #fff;
     }
     h1 {
-      color: #333;
+      color: #fff;
     }
     p {
-      color: #666;
+      color: #ccc;
       line-height: 1.6;
     }
     a.button {
@@ -25,29 +26,36 @@
       text-decoration: none;
       border-radius: 4px;
       margin-top: 20px;
+      cursor: pointer;
     }
     a.button:hover {
       background-color: #0056b3;
     }
-    img {
-      max-width: 100%;
-      height: auto;
+    #message {
       margin-top: 20px;
+      font-size: 18px;
+      color: #00ffcc;
     }
   </style>
 </head>
 <body>
-  <h1>你好，世界！👋</h1>
-  <p>这是我的第一个网页。</p>
-  
-  <!-- 新增说明段落 -->
-  <p>在这个网页中，我正在学习如何添加更多内容，包括图片、按钮以及更多的文字描述。欢迎访问我的网站，了解更多信息！</p>
-  
-  <!-- 新增按钮 -->
-  <a class="button" href="https://example.com" target="_blank">点击这里跳转</a>
-  
-  <!-- 新增图片 -->
-  <img src="https://via.placeholder.com/600x300.png?text=示例图片" alt="示例图片">
-  
+  <h1>交互效果示例</h1>
+  <p>点击下面的按钮，我会向你打个招呼！</p>
+  <a class="button" id="greetButton">点击我</a>
+  <p id="message"></p>
+
+  <script>
+    var button = document.getElementById('greetButton');
+    var message = document.getElementById('message');
+
+    button.addEventListener('click', function() {
+      message.textContent = "你好，欢迎来到我的网页！";
+      message.style.color = '#ff4081'; // 点击后变粉色
+      setTimeout(function() {
+        message.style.color = '#00ffcc'; // 再变回来
+      }, 1000);
+    });
+  </script>
 </body>
 </html>
+
