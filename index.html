@@ -48,22 +48,17 @@
     }
 
     #messageInput {
-      background-color: white;
-      color: black;
+      background-color: #000;
+      color: #fff;
       border: 1px solid white;
       border-radius: 0;
       padding: 10px;
       width: 300px;
     }
 
-    button {
-      padding: 10px 20px;
-      background-color: #00aaff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-left: 10px;
+    #messageInput:focus {
+      outline: none;
+      border-color: #00aaff;
     }
   </style>
 </head>
@@ -77,7 +72,6 @@
     <div id="chatBox"></div>
     <div>
       <input type="text" id="messageInput" placeholder="输入消息">
-      <button onclick="sendMessage()">发送</button>
     </div>
   </div>
 
@@ -93,20 +87,17 @@
       measurementId: "G-CVL61HZMY7"
     };
 
-    // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // 显示当前登录用户昵称
+    // 显示用户昵称
     auth.onAuthStateChanged(user => {
       if (user) {
         const email = user.email || '';
         const nickname = email.split('@')[0];
         document.getElementById("username").textContent = nickname;
       } else {
-        // 没登录就跳转到登录页（如果需要）
         alert("未登录，请先登录");
-        // window.location.href = "login.html"; // 可选
       }
     });
 
@@ -130,7 +121,7 @@
       }
     }
 
-    // 按 Enter 键发送
+    // Enter 键发送
     document.getElementById("messageInput").addEventListener("keydown", function(event) {
       if (event.key === "Enter") {
         sendMessage();
