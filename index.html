@@ -1,61 +1,94 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>交互效果示例</title>
+  <meta charset="UTF-8" />
+  <title>用户注册和登录</title>
   <style>
     body {
-      background-color: #000;
+      background-color: #121212;
+      color: #fff;
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 50px;
-      color: #fff;
     }
-    h1 {
-      color: #fff;
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: none;
     }
-    p {
-      color: #ccc;
-      line-height: 1.6;
-    }
-    a.button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      margin-top: 20px;
+    button {
+      background-color: #00aaff;
+      color: white;
       cursor: pointer;
     }
-    a.button:hover {
-      background-color: #0056b3;
-    }
-    #message {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #00ffcc;
-    }
   </style>
+
+  <!-- Firebase App (必须的核心库) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
+  <!-- Firebase Auth (认证) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
+  <!-- Firebase Firestore (用于保存昵称等数据) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
 </head>
 <body>
-  <h1>交互效果示例</h1>
-  <p>点击下面的按钮，我会向你打个招呼！</p>
-  <a class="button" id="greetButton">点击我</a>
+  <h1>欢迎来到 Kensama 网站</h1>
+  <p>请输入昵称和密码注册或登录</p>
+
+  <input type="text" id="nickname" placeholder="昵称"><br>
+  <input type="password" id="password" placeholder="密码"><br>
+  <button onclick="register()">注册</button>
+  <button onclick="login()">登录</button>
+
   <p id="message"></p>
 
   <script>
-    var button = document.getElementById('greetButton');
-    var message = document.getElementById('message');
+    // 配置 Firebase（来自你的项目）
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
+      authDomain: "kensamawebsite.firebaseapp.com",
+      projectId: "kensamawebsite",
+      storageBucket: "kensamawebsite.firebasestorage.app",
+      messagingSenderId: "33823463857",
+      appId: "1:33823463857:web:477a5078ce99cdd5f78590",
+      measurementId: "G-CVL61HZMY7"
+    };
 
-    button.addEventListener('click', function() {
-      message.textContent = "你好，欢迎来到我的网页！";
-      message.style.color = '#ff4081'; // 点击后变粉色
-      setTimeout(function() {
-        message.style.color = '#00ffcc'; // 再变回来
-      }, 1000);
-    });
+    // 初始化 Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // 注册函数
+    async function register() {
+      const nickname = document.getElementById("nickname").value;
+      const password = document.getElementById("password").value;
+      const email = nickname + "@kensama.com"; // 用昵称拼个假的邮箱
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection("users").doc(userCredential.user.uid).set({
+          name: nickname
+        });
+        document.getElementById("message").innerText = "注册成功！欢迎，" + nickname;
+      } catch (error) {
+        document.getElementById("message").innerText = "注册失败：" + error.message;
+      }
+    }
+
+    // 登录函数
+    async function login() {
+      const nickname = document.getElementById("nickname").value;
+      const password = document.getElementById("password").value;
+      const email = nickname + "@kensama.com";
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        document.getElementById("message").innerText = "登录成功！欢迎回来，" + nickname;
+      } catch (error) {
+        document.getElementById("message").innerText = "登录失败：" + error.message;
+      }
+    }
   </script>
 </body>
 </html>
-
