@@ -1,49 +1,44 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <title>用户注册和登录</title>
+  <meta charset="UTF-8">
+  <title>注册页面</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
     body {
-      background-color: #121212;
+      background-color: #111;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       text-align: center;
       padding: 50px;
     }
-    input, button {
+    input {
       padding: 10px;
       margin: 10px;
       border-radius: 5px;
-      border: none;
+      width: 200px;
     }
     button {
+      padding: 10px 20px;
       background-color: #00aaff;
       color: white;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
   </style>
-
-  <!-- Firebase App (必须的核心库) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
-  <!-- Firebase Auth (认证) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"></script>
-  <!-- Firebase Firestore (用于保存昵称等数据) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"></script>
 </head>
 <body>
-  <h1>欢迎来到 Kensama 网站</h1>
-  <p>请输入昵称和密码注册或登录</p>
-
-  <input type="text" id="nickname" placeholder="昵称"><br>
-  <input type="password" id="password" placeholder="密码"><br>
+  <h1>用户注册</h1>
+  <input type="text" id="nickname" placeholder="请输入昵称">
+  <br>
+  <input type="password" id="password" placeholder="请输入密码">
+  <br>
   <button onclick="register()">注册</button>
-  <button onclick="login()">登录</button>
-
-  <p id="message"></p>
 
   <script>
-    // 配置 Firebase（来自你的项目）
+    // Firebase 配置
     const firebaseConfig = {
       apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
       authDomain: "kensamawebsite.firebaseapp.com",
@@ -57,37 +52,22 @@
     // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.firestore();
 
     // 注册函数
-    async function register() {
+    function register() {
       const nickname = document.getElementById("nickname").value;
       const password = document.getElementById("password").value;
-      const email = nickname + "@kensama.com"; // 用昵称拼个假的邮箱
+      const email = `${nickname}@kensama.com`; // 构造一个邮箱
 
-      try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection("users").doc(userCredential.user.uid).set({
-          name: nickname
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          alert("注册成功！");
+          console.log(userCredential.user);
+        })
+        .catch(error => {
+          alert("注册失败: " + error.message);
+          console.error(error);
         });
-        document.getElementById("message").innerText = "注册成功！欢迎，" + nickname;
-      } catch (error) {
-        document.getElementById("message").innerText = "注册失败：" + error.message;
-      }
-    }
-
-    // 登录函数
-    async function login() {
-      const nickname = document.getElementById("nickname").value;
-      const password = document.getElementById("password").value;
-      const email = nickname + "@kensama.com";
-
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        document.getElementById("message").innerText = "登录成功！欢迎回来，" + nickname;
-      } catch (error) {
-        document.getElementById("message").innerText = "登录失败：" + error.message;
-      }
     }
   </script>
 </body>
