@@ -1,4 +1,4 @@
-// admin-pro.js - 管理员后台：实时聊天 + 消息即时显示
+// admin-pro.js - 管理后台：支持 Enter 发送 + 实时刷新消息
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
@@ -27,7 +27,7 @@ const sendBtn = document.getElementById("sendBtn");
 let selectedUser = null;
 let unsubscribe = null;
 
-// 显示所有发给 kensama 的用户
+// 监听发过消息的用户
 const q = query(collection(db, "privateMessages"));
 onSnapshot(q, snapshot => {
   const users = new Set();
@@ -50,7 +50,7 @@ onSnapshot(q, snapshot => {
   });
 });
 
-// 加载用户对话 + 实时更新
+// 加载聊天记录
 function loadChat(user) {
   selectedUser = user;
   chatTitle.textContent = `与 ${user} 的对话`;
@@ -67,13 +67,11 @@ function loadChat(user) {
 
   unsubscribe = onSnapshot(chatQuery, snapshot => {
     const messageList = [];
-
     snapshot.forEach(doc => {
       const msg = doc.data();
       messageList.push(msg);
     });
 
-    // 更新 UI
     messagesDiv.innerHTML = "";
     messageList.forEach(msg => {
       const div = document.createElement("div");
@@ -88,8 +86,8 @@ function loadChat(user) {
   });
 }
 
-// 发消息 + 自动刷新
-sendBtn.onclick = async () => {
+// 发送消息的函数（供按钮或键盘使用）
+async function sendMessage() {
   const text = messageInput.value.trim();
   if (!text || !selectedUser) return;
 
@@ -101,5 +99,19 @@ sendBtn.onclick = async () => {
   });
 
   messageInput.value = "";
-};
 
+  setTimeout(() => {
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }, 50);
+}
+
+// 支持点击按钮发送
+sendBtn.onclick = sendMessage;
+
+// 支持按 Enter 发送
+messageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendMessage();
+  }
+});
