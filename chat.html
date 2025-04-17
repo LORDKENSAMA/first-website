@@ -1,0 +1,76 @@
+<!-- chat.html -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>聊天页面</title>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+    .user-info img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-left: 10px;
+    }
+    .chat-container {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .message {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    .message.self {
+      background-color: #dcf8c6;
+      text-align: right;
+    }
+    .message.other {
+      background-color: #f1f0f0;
+      text-align: left;
+    }
+    #messageInput {
+      width: 80%;
+    }
+    #sendBtn {
+      width: 18%;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="user-info">
+      <span id="userName">用户昵称</span>
+      <img src="https://www.gravatar.com/avatar?d=mp" alt="头像">
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="输入消息...">
+    <button id="sendBtn">发送</button>
+  </div>
+
+  <script type="module" src="chat.js"></script>
+</body>
+</html>
