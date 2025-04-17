@@ -3,184 +3,171 @@
 <head>
   <meta charset="UTF-8">
   <title>Kensama 聊天系统</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <style>
     body {
-      margin: 0;
-      padding: 0;
       background-color: #111;
       color: white;
       font-family: sans-serif;
-    }
-    .center {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 50px;
+      padding: 20px;
     }
-    input, button {
+
+    #chatBox {
+      width: 60%;
+      height: 300px;
+      border: 1px solid #ccc;
+      background-color: #222;
       padding: 10px;
-      margin: 10px;
-      border-radius: 0;
-      font-size: 16px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
     }
+
     input {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
       background-color: black;
       color: white;
-      border: 1px solid white;
-      width: 300px;
+      border: 1px solid #999;
     }
-    button {
-      background-color: #00aaff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    #chatContainer {
-      display: none;
-    }
+
     #userInfo {
       position: absolute;
       top: 20px;
-      right: 30px;
+      right: 20px;
       display: flex;
       align-items: center;
     }
-    #userName {
-      margin-right: 10px;
-    }
-    #chatBox {
-      width: 600px;
-      height: 300px;
-      background-color: #222;
-      border: 1px solid #555;
-      padding: 20px;
-      overflow-y: auto;
-      margin: 100px auto 20px;
-      white-space: pre-wrap;
-    }
-    #chatInput {
-      text-align: center;
+
+    #userInfo img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
     }
   </style>
 </head>
 <body>
 
-  <!-- 登录注册界面 -->
-  <div class="center" id="authContainer">
-    <h1>欢迎，请注册或登录</h1>
-    <input type="text" id="nickname" placeholder="请输入昵称">
-    <input type="password" id="password" placeholder="请输入密码">
-    <div>
-      <button onclick="register()">注册</button>
-      <button onclick="login()">登录</button>
-    </div>
+<div id="authContainer">
+  <h2>Kensama 聊天系统</h2>
+  <input type="text" id="nickname" placeholder="昵称（将转小写）">
+  <input type="password" id="password" placeholder="密码">
+  <div>
+    <button onclick="register()">注册</button>
+    <button onclick="login()">登录</button>
+  </div>
+</div>
+
+<div id="chatContainer" style="display: none;">
+  <div id="userInfo">
+    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像">
+    <span id="userName">用户</span>
   </div>
 
-  <!-- 聊天界面 -->
-  <div id="chatContainer">
-    <div id="userInfo">
-      <span id="userName"></span>
-      <img src="https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg" alt="头像" width="40" height="40">
-    </div>
-    <div id="chatBox"></div>
-    <div id="chatInput">
-      <input type="text" id="messageInput" placeholder="输入消息">
-    </div>
-  </div>
+  <div id="chatBox"></div>
+  <input type="text" id="messageInput" placeholder="输入消息">
+</div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
-      authDomain: "kensamawebsite.firebaseapp.com",
-      projectId: "kensamawebsite",
-      storageBucket: "kensamawebsite.appspot.com",
-      messagingSenderId: "33823463857",
-      appId: "1:33823463857:web:477a5078ce99cdd5f78590",
-      measurementId: "G-CVL61HZMY7"
-    };
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
+    authDomain: "kensamawebsite.firebaseapp.com",
+    projectId: "kensamawebsite",
+    storageBucket: "kensamawebsite.appspot.com",
+    messagingSenderId: "33823463857",
+    appId: "1:33823463857:web:477a5078ce99cdd5f78590",
+    measurementId: "G-CVL61HZMY7"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    const nicknameInput = document.getElementById("nickname");
-    const passwordInput = document.getElementById("password");
-    const chatBox = document.getElementById("chatBox");
-    const input = document.getElementById("messageInput");
+  const nicknameInput = document.getElementById("nickname");
+  const passwordInput = document.getElementById("password");
+  const chatBox = document.getElementById("chatBox");
+  const input = document.getElementById("messageInput");
 
-    let currentUser = null;
+  let currentUser = null;
 
-    function register() {
-      const nickname = nicknameInput.value.trim();
-      const password = passwordInput.value;
-      const email = `${nickname}@kensama.com`;
+  function register() {
+    const nickname = nicknameInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
+    const email = `${nickname}@kensama.com`;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(() => alert("注册成功，请登录"))
-        .catch(error => alert("注册失败：" + error.message));
-    }
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(() => alert("注册成功，请登录"))
+      .catch(error => alert("注册失败：" + error.message));
+  }
 
-    function login() {
-      const nickname = nicknameInput.value.trim();
-      const password = passwordInput.value;
-      const email = `${nickname}@kensama.com`;
+  function login() {
+    const nickname = nicknameInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
+    const email = `${nickname}@kensama.com`;
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          showChat();
-        })
-        .catch(error => alert("登录失败：" + error.message));
-    }
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        showChat();
+      })
+      .catch(error => alert("登录失败：" + error.message));
+  }
 
-    function showChat() {
-      document.getElementById("authContainer").style.display = "none";
-      document.getElementById("chatContainer").style.display = "block";
+  function showChat() {
+    document.getElementById("authContainer").style.display = "none";
+    document.getElementById("chatContainer").style.display = "block";
 
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          const email = user.email;
-          const nickname = email.split("@")[0];
-          currentUser = nickname;
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const email = user.email;
+        const nickname = email.split("@")[0].toLowerCase();
+        currentUser = nickname;
 
-          document.getElementById("userName").innerText = nickname;
+        document.getElementById("userName").innerText = nickname;
 
-          // 监听聊天记录
-          db.collection("privateMessages")
-            .orderBy("timestamp")
-            .onSnapshot(snapshot => {
-              chatBox.innerHTML = "";
-              snapshot.forEach(doc => {
-                const msg = doc.data();
-                if (
-                  (msg.sender === currentUser && msg.receiver === "kensama") ||
-                  (msg.sender === "kensama" && msg.receiver === currentUser)
-                ) {
-                  const who = msg.sender === currentUser ? "你" : "Kensama";
-                  chatBox.innerHTML += `${who}：${msg.message}\n`;
-                }
-              });
-              chatBox.scrollTop = chatBox.scrollHeight;
+        // 监听聊天记录
+        db.collection("privateMessages")
+          .orderBy("timestamp")
+          .onSnapshot(snapshot => {
+            chatBox.innerHTML = "";
+            snapshot.forEach(doc => {
+              const msg = doc.data();
+              const sender = msg.sender?.toLowerCase();
+              const receiver = msg.receiver?.toLowerCase();
+              if (
+                (sender === currentUser && receiver === "kensama") ||
+                (sender === "kensama" && receiver === currentUser)
+              ) {
+                const who = sender === currentUser ? "你" : "Kensama";
+                chatBox.innerHTML += `${who}：${msg.message}\n`;
+              }
             });
-
-          // 发送消息
-          input.addEventListener("keydown", async function (e) {
-            if (e.key === "Enter" && input.value.trim() !== "") {
-              const text = input.value.trim();
-              await db.collection("privateMessages").add({
-                sender: currentUser,
-                receiver: "kensama",
-                message: text,
-                timestamp: new Date()
-              });
-              input.value = "";
-            }
+            chatBox.scrollTop = chatBox.scrollHeight;
           });
-        }
-      });
-    }
-  </script>
+
+        // 发送消息
+        input.addEventListener("keydown", async function (e) {
+          if (e.key === "Enter" && input.value.trim() !== "") {
+            const text = input.value.trim();
+            await db.collection("privateMessages").add({
+              sender: currentUser,
+              receiver: "kensama",
+              message: text,
+              timestamp: new Date()
+            });
+            input.value = "";
+          }
+        });
+      }
+    });
+  }
+</script>
+
 </body>
 </html>
