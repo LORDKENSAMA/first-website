@@ -1,13 +1,6 @@
-// admin.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import {
-  getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-// 初始化
 const firebaseConfig = {
   apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
   authDomain: "kensamawebsite.firebaseapp.com",
@@ -19,88 +12,73 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 const userUl = document.getElementById("userUl");
 const messagesDiv = document.getElementById("messages");
+const chatTitle = document.getElementById("chatTitle");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
-const chatTitle = document.getElementById("chatTitle");
 
 let selectedUser = null;
+let unsubscribe = null;
 
-// 确保是 Kensama 登录
-onAuthStateChanged(auth, user => {
-  if (!user || user.email !== "kensama@kensama.com") {
-    alert("无权限访问此页面");
-    window.location.href = "index.html";
-    return;
-  }
-  loadUserList();
+// 显示所有发过消息的用户
+const q = query(collection(db, "privateMessages"));
+onSnapshot(q, snapshot => {
+  const users = new Set();
+  snapshot.forEach(doc => {
+    const msg = doc.data();
+    if (msg.receiver === "kensama") {
+      users.add(msg.sender);
+    }
+  });
+
+  userUl.innerHTML = "";
+  users.forEach(user => {
+    const li = document.createElement("li");
+    li.textContent = user;
+    li.style.cursor = "pointer";
+    li.onclick = () => loadChat(user);
+    userUl.appendChild(li);
+  });
 });
 
-// 加载用户列表
-function loadUserList() {
-  const q = query(collection(db, "messages"));
-  const userSet = new Set();
+function loadChat(user) {
+  selectedUser = user;
+  chatTitle.textContent = `与 ${user} 的对话`;
+  messagesDiv.innerHTML = "";
 
-  onSnapshot(q, snapshot => {
-    userSet.clear();
-    snapshot.forEach(doc => {
-      const msg = doc.data();
-      if (msg.from !== "kensama@kensama.com") {
-        userSet.add(msg.from);
-      }
-    });
+  if (unsubscribe) unsubscribe();
 
-    userUl.innerHTML = "";
-    userSet.forEach(userEmail => {
-      const li = document.createElement("li");
-      li.textContent = userEmail.split("@")[0];
-      li.style.cursor = "pointer";
-      li.onclick = () => selectUser(userEmail);
-      userUl.appendChild(li);
-    });
-  });
-}
-
-// 选择用户查看聊天记录
-function selectUser(userEmail) {
-  selectedUser = userEmail;
-  chatTitle.innerText = "与 " + selectedUser.split("@")[0] + " 的聊天";
-
-  const q = query(
-    collection(db, "messages"),
-    where("from", "in", [userEmail, "kensama@kensama.com"]),
-    where("to", "in", [userEmail, "kensama@kensama.com"]),
+  const chatQuery = query(
+    collection(db, "privateMessages"),
+    where("sender", "in", [user, "kensama"]),
+    where("receiver", "in", [user, "kensama"]),
     orderBy("timestamp")
   );
 
-  onSnapshot(q, snapshot => {
+  unsubscribe = onSnapshot(chatQuery, snapshot => {
     messagesDiv.innerHTML = "";
     snapshot.forEach(doc => {
       const msg = doc.data();
       const div = document.createElement("div");
-      div.className = "message " + (msg.from === "kensama@kensama.com" ? "self" : "other");
-      div.innerText = msg.text;
+      div.textContent = `${msg.sender}：${msg.message}`;
+      div.className = "message " + (msg.sender === "kensama" ? "self" : "other");
       messagesDiv.appendChild(div);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 }
 
-// 发送消息
 sendBtn.onclick = async () => {
-  const text = messageInput.value;
-  if (!text.trim() || !selectedUser) return;
-
-  await addDoc(collection(db, "messages"), {
-    from: "kensama@kensama.com",
-    to: selectedUser,
-    text,
-    timestamp: serverTimestamp()
+  const text = messageInput.value.trim();
+  if (!text || !selectedUser) return;
+  await addDoc(collection(db, "privateMessages"), {
+    sender: "kensama",
+    receiver: selectedUser,
+    message: text,
+    timestamp: new Date()
   });
-
   messageInput.value = "";
 };
