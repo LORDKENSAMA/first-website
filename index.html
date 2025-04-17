@@ -130,45 +130,54 @@
 
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-          showChat(nickname);
+          showChat();
         })
         .catch(error => alert("登录失败：" + error.message));
     }
 
-    function showChat(nickname) {
+    function showChat() {
       document.getElementById("authContainer").style.display = "none";
       document.getElementById("chatContainer").style.display = "block";
-      document.getElementById("userName").innerText = nickname;
-      currentUser = nickname;
 
-      // 监听 Firestore 中与 Kensama 的私聊消息
-      db.collection("privateMessages")
-        .orderBy("timestamp")
-        .onSnapshot(snapshot => {
-          chatBox.innerHTML = "";
-          snapshot.forEach(doc => {
-            const msg = doc.data();
-            if (
-              (msg.sender === currentUser && msg.receiver === "kensama") ||
-              (msg.sender === "kensama" && msg.receiver === currentUser)
-            ) {
-              const who = msg.sender === currentUser ? "你" : "Kensama";
-              chatBox.innerHTML += `${who}：${msg.message}\n`;
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          const email = user.email;
+          const nickname = email.split("@")[0];
+          currentUser = nickname;
+
+          document.getElementById("userName").innerText = nickname;
+
+          // 监听聊天记录
+          db.collection("privateMessages")
+            .orderBy("timestamp")
+            .onSnapshot(snapshot => {
+              chatBox.innerHTML = "";
+              snapshot.forEach(doc => {
+                const msg = doc.data();
+                if (
+                  (msg.sender === currentUser && msg.receiver === "kensama") ||
+                  (msg.sender === "kensama" && msg.receiver === currentUser)
+                ) {
+                  const who = msg.sender === currentUser ? "你" : "Kensama";
+                  chatBox.innerHTML += `${who}：${msg.message}\n`;
+                }
+              });
+              chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+          // 发送消息
+          input.addEventListener("keydown", async function (e) {
+            if (e.key === "Enter" && input.value.trim() !== "") {
+              const text = input.value.trim();
+              await db.collection("privateMessages").add({
+                sender: currentUser,
+                receiver: "kensama",
+                message: text,
+                timestamp: new Date()
+              });
+              input.value = "";
             }
           });
-          chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-      input.addEventListener("keydown", async function (e) {
-        if (e.key === "Enter" && input.value.trim() !== "") {
-          const text = input.value.trim();
-          await db.collection("privateMessages").add({
-            sender: currentUser,
-            receiver: "kensama",
-            message: text,
-            timestamp: new Date()
-          });
-          input.value = "";
         }
       });
     }
