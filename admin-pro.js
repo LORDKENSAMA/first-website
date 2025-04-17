@@ -1,4 +1,4 @@
-// admin-pro.js
+// admin-pro.js - Kensama 管理员后台实时私聊系统
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
@@ -18,6 +18,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// DOM 元素
 const userUl = document.getElementById("userUl");
 const messagesDiv = document.getElementById("messages");
 const chatTitle = document.getElementById("chatTitle");
@@ -27,7 +28,7 @@ const sendBtn = document.getElementById("sendBtn");
 let selectedUser = null;
 let unsubscribe = null;
 
-// 获取所有发给 kensama 的用户
+// 实时监听所有发消息给 kensama 的用户
 const q = query(collection(db, "privateMessages"));
 onSnapshot(q, snapshot => {
   const users = new Set();
@@ -49,13 +50,13 @@ onSnapshot(q, snapshot => {
   });
 });
 
-// 加载聊天记录
+// 加载某个用户的聊天记录（实时）
 function loadChat(user) {
   selectedUser = user;
   chatTitle.textContent = `与 ${user} 的对话`;
   messagesDiv.innerHTML = "";
 
-  if (unsubscribe) unsubscribe();
+  if (unsubscribe) unsubscribe(); // 清除旧监听
 
   const chatQuery = query(
     collection(db, "privateMessages"),
@@ -81,11 +82,13 @@ function loadChat(user) {
 sendBtn.onclick = async () => {
   const text = messageInput.value.trim();
   if (!text || !selectedUser) return;
+
   await addDoc(collection(db, "privateMessages"), {
     sender: "kensama",
     receiver: selectedUser,
     message: text,
     timestamp: new Date()
   });
+
   messageInput.value = "";
 };
