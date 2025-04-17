@@ -1,11 +1,11 @@
-// admin-pro.js - 管理员后台最终版：Enter 发送 + 实时刷新
+// admin-pro.js - 完整修复：支持 Enter，实时刷新，自动滚动
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
   orderBy, onSnapshot, addDoc
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-window.onload = () => {
+window.addEventListener("DOMContentLoaded", () => {
   const firebaseConfig = {
     apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
     authDomain: "kensamawebsite.firebaseapp.com",
@@ -28,9 +28,9 @@ window.onload = () => {
   let selectedUser = null;
   let unsubscribe = null;
 
-  // 加载用户列表
-  const q = query(collection(db, "privateMessages"));
-  onSnapshot(q, snapshot => {
+  // 实时监听所有发给 Kensama 的用户
+  const userQuery = query(collection(db, "privateMessages"));
+  onSnapshot(userQuery, snapshot => {
     const users = new Set();
     snapshot.forEach(doc => {
       const msg = doc.data();
@@ -51,7 +51,7 @@ window.onload = () => {
     });
   });
 
-  // 加载聊天记录
+  // 加载对话记录
   function loadChat(user) {
     selectedUser = user;
     chatTitle.textContent = `与 ${user} 的对话`;
@@ -67,14 +67,9 @@ window.onload = () => {
     );
 
     unsubscribe = onSnapshot(chatQuery, snapshot => {
-      const messageList = [];
+      messagesDiv.innerHTML = "";
       snapshot.forEach(doc => {
         const msg = doc.data();
-        messageList.push(msg);
-      });
-
-      messagesDiv.innerHTML = "";
-      messageList.forEach(msg => {
         const div = document.createElement("div");
         div.className = "message " + (msg.sender === "kensama" ? "self" : "other");
         div.textContent = msg.message;
@@ -87,7 +82,7 @@ window.onload = () => {
     });
   }
 
-  // 发送消息
+  // 发送消息函数
   async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || !selectedUser) return;
@@ -100,20 +95,16 @@ window.onload = () => {
     });
 
     messageInput.value = "";
-
-    setTimeout(() => {
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }, 50);
   }
 
-  // 点击发送按钮
+  // 点击按钮发送
   sendBtn.onclick = sendMessage;
 
-  // 按 Enter 也发送消息
+  // 按 Enter 发送
   messageInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       sendMessage();
     }
   });
-};
+});
