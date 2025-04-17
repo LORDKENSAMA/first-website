@@ -1,4 +1,4 @@
-// admin-pro.js - Kensama 管理员后台实时私聊系统
+// admin-pro.js - Kensama 管理后台（实时聊天 + 自动刷新）
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
@@ -18,7 +18,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// DOM 元素
 const userUl = document.getElementById("userUl");
 const messagesDiv = document.getElementById("messages");
 const chatTitle = document.getElementById("chatTitle");
@@ -28,7 +27,7 @@ const sendBtn = document.getElementById("sendBtn");
 let selectedUser = null;
 let unsubscribe = null;
 
-// 实时监听所有发消息给 kensama 的用户
+// 监听所有发过消息给 kensama 的用户
 const q = query(collection(db, "privateMessages"));
 onSnapshot(q, snapshot => {
   const users = new Set();
@@ -45,18 +44,19 @@ onSnapshot(q, snapshot => {
   users.forEach(user => {
     const li = document.createElement("li");
     li.textContent = user;
+    li.style.cursor = "pointer";
     li.onclick = () => loadChat(user);
     userUl.appendChild(li);
   });
 });
 
-// 加载某个用户的聊天记录（实时）
+// 加载与某个用户的聊天
 function loadChat(user) {
   selectedUser = user;
   chatTitle.textContent = `与 ${user} 的对话`;
   messagesDiv.innerHTML = "";
 
-  if (unsubscribe) unsubscribe(); // 清除旧监听
+  if (unsubscribe) unsubscribe();
 
   const chatQuery = query(
     collection(db, "privateMessages"),
@@ -78,7 +78,7 @@ function loadChat(user) {
   });
 }
 
-// 发送消息
+// 发送消息并立即显示
 sendBtn.onclick = async () => {
   const text = messageInput.value.trim();
   if (!text || !selectedUser) return;
@@ -91,4 +91,9 @@ sendBtn.onclick = async () => {
   });
 
   messageInput.value = "";
+
+  // 主动滚动到底部（确保新消息立即可见）
+  setTimeout(() => {
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }, 100);
 };
