@@ -1,8 +1,7 @@
-// chat.js
+// chat.js - 用户聊天逻辑（与 Kensama）
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, query,
-  where, orderBy, onSnapshot
+  getFirestore, collection, addDoc, query, orderBy, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged
@@ -35,23 +34,27 @@ onAuthStateChanged(auth, user => {
     currentUser = nickname;
     userNameSpan.textContent = nickname;
 
-    const q = query(
-      collection(db, "privateMessages"),
-      where("sender", "in", [currentUser, "kensama"]),
-      where("receiver", "in", [currentUser, "kensama"]),
-      orderBy("timestamp")
-    );
-
+    // 监听所有消息，只显示当前用户和 Kensama 的对话
+    const q = query(collection(db, "privateMessages"), orderBy("timestamp"));
     onSnapshot(q, snapshot => {
       chatBox.innerHTML = "";
       snapshot.forEach(doc => {
         const msg = doc.data();
-        const who = msg.sender === currentUser ? "你" : "Kensama";
-        chatBox.innerHTML += `${who}：${msg.message}\n`;
+        const sender = msg.sender?.toLowerCase();
+        const receiver = msg.receiver?.toLowerCase();
+
+        if (
+          (sender === currentUser && receiver === "kensama") ||
+          (sender === "kensama" && receiver === currentUser)
+        ) {
+          const who = sender === currentUser ? "你" : "Kensama";
+          chatBox.innerHTML += `${who}：${msg.message}\n`;
+        }
       });
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 
+    // 发送消息
     input.addEventListener("keydown", async e => {
       if (e.key === "Enter" && input.value.trim() !== "") {
         await addDoc(collection(db, "privateMessages"), {
