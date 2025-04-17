@@ -3,74 +3,64 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>聊天页面</title>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js"></script>
+  <title>用户聊天 - Kensama</title>
+  <script type="module" src="chat.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .header {
-      background-color: #333;
+      background-color: #111;
       color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #chatBox {
+      width: 70%;
+      height: 300px;
+      border: 1px solid #ccc;
+      background-color: #222;
       padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
+      background-color: black;
+      color: white;
+      border: 1px solid #999;
+    }
+
+    #userInfo {
+      position: absolute;
+      top: 20px;
+      right: 20px;
       display: flex;
-      justify-content: flex-end;
       align-items: center;
     }
-    .user-info {
-      display: flex;
-      align-items: center;
-    }
-    .user-info img {
+
+    #userInfo img {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      margin-left: 10px;
-    }
-    .chat-container {
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .message {
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 5px;
-    }
-    .message.self {
-      background-color: #dcf8c6;
-      text-align: right;
-    }
-    .message.other {
-      background-color: #f1f0f0;
-      text-align: left;
-    }
-    #messageInput {
-      width: 80%;
-    }
-    #sendBtn {
-      width: 18%;
+      margin-right: 8px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="user-info">
-      <span id="userName">用户昵称</span>
-      <img src="https://www.gravatar.com/avatar?d=mp" alt="头像">
-    </div>
+  <div id="userInfo">
+    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像">
+    <span id="userName">用户</span>
   </div>
 
-  <div class="chat-container">
-    <div id="messages"></div>
-    <input type="text" id="messageInput" placeholder="输入消息...">
-    <button id="sendBtn">发送</button>
-  </div>
+  <h2>与 Kensama 的对话</h2>
 
-  <script type="module" src="chat.js"></script>
+  <div id="chatBox"></div>
+  <input type="text" id="messageInput" placeholder="输入消息，按 Enter 发送">
 </body>
 </html>
