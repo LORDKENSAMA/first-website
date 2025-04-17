@@ -1,6 +1,9 @@
 // admin-pro.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getFirestore, collection, query, where, orderBy, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import {
+  getFirestore, collection, query, where,
+  orderBy, onSnapshot, addDoc
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
@@ -24,14 +27,16 @@ const sendBtn = document.getElementById("sendBtn");
 let selectedUser = null;
 let unsubscribe = null;
 
-// 加载所有发给 kensama 的用户
+// 获取所有发给 kensama 的用户
 const q = query(collection(db, "privateMessages"));
 onSnapshot(q, snapshot => {
   const users = new Set();
   snapshot.forEach(doc => {
-    const data = doc.data();
-    if (data.receiver?.toLowerCase() === "kensama") {
-      users.add(data.sender?.toLowerCase());
+    const msg = doc.data();
+    const receiver = msg.receiver?.toLowerCase();
+    const sender = msg.sender?.toLowerCase();
+    if (receiver === "kensama" && sender !== "kensama") {
+      users.add(sender);
     }
   });
 
@@ -65,7 +70,7 @@ function loadChat(user) {
       const msg = doc.data();
       const div = document.createElement("div");
       div.className = "message " + (msg.sender === "kensama" ? "self" : "other");
-      div.textContent = `${msg.message}`;
+      div.textContent = msg.message;
       messagesDiv.appendChild(div);
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
