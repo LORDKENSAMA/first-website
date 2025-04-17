@@ -5,6 +5,7 @@
   <title>Kensama 聊天系统</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <style>
     body {
       margin: 0;
@@ -91,7 +92,6 @@
   </div>
 
   <script>
-    // Firebase 配置
     const firebaseConfig = {
       apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
       authDomain: "kensamawebsite.firebaseapp.com",
@@ -104,11 +104,18 @@
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // 注册功能
+    const nicknameInput = document.getElementById("nickname");
+    const passwordInput = document.getElementById("password");
+    const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("messageInput");
+
+    let currentUser = null;
+
     function register() {
-      const nickname = document.getElementById("nickname").value;
-      const password = document.getElementById("password").value;
+      const nickname = nicknameInput.value.trim();
+      const password = passwordInput.value;
       const email = `${nickname}@kensama.com`;
 
       auth.createUserWithEmailAndPassword(email, password)
@@ -116,38 +123,55 @@
         .catch(error => alert("注册失败：" + error.message));
     }
 
-    // 登录功能
     function login() {
-      const nickname = document.getElementById("nickname").value;
-      const password = document.getElementById("password").value;
+      const nickname = nicknameInput.value.trim();
+      const password = passwordInput.value;
       const email = `${nickname}@kensama.com`;
 
       auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
+        .then(() => {
           showChat(nickname);
         })
         .catch(error => alert("登录失败：" + error.message));
     }
 
-    // 展示聊天页面
     function showChat(nickname) {
       document.getElementById("authContainer").style.display = "none";
       document.getElementById("chatContainer").style.display = "block";
       document.getElementById("userName").innerText = nickname;
+      currentUser = nickname;
+
+      // 监听 Firestore 中与 Kensama 的私聊消息
+      db.collection("privateMessages")
+        .orderBy("timestamp")
+        .onSnapshot(snapshot => {
+          chatBox.innerHTML = "";
+          snapshot.forEach(doc => {
+            const msg = doc.data();
+            if (
+              (msg.sender === currentUser && msg.receiver === "kensama") ||
+              (msg.sender === "kensama" && msg.receiver === currentUser)
+            ) {
+              const who = msg.sender === currentUser ? "你" : "Kensama";
+              chatBox.innerHTML += `${who}：${msg.message}\n`;
+            }
+          });
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+      input.addEventListener("keydown", async function (e) {
+        if (e.key === "Enter" && input.value.trim() !== "") {
+          const text = input.value.trim();
+          await db.collection("privateMessages").add({
+            sender: currentUser,
+            receiver: "kensama",
+            message: text,
+            timestamp: new Date()
+          });
+          input.value = "";
+        }
+      });
     }
-
-    // 聊天发送
-    const input = document.getElementById("messageInput");
-    const chatBox = document.getElementById("chatBox");
-
-    input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" && input.value.trim() !== "") {
-        const msg = input.value;
-        chatBox.innerText += `你：${msg}\n系统：收到：${msg}\n`;
-        input.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
-      }
-    });
   </script>
 </body>
 </html>
