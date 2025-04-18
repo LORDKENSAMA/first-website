@@ -1,11 +1,16 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <title>Kensama 聊天系统</title>
+
+  <!-- ✅ 加上外部样式文件 -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <!-- ✅ 保留你原来的 style（可选合并到 style.css） -->
   <style>
     body {
       background-color: #111;
@@ -53,72 +58,3 @@
     }
   </style>
 </head>
-<body>
-
-<div id="authContainer">
-  <h2>Kensama 聊天系统</h2>
-  <input type="text" id="nickname" placeholder="昵称（将转小写）">
-  <input type="password" id="password" placeholder="密码">
-  <div>
-    <button onclick="register()">注册</button>
-    <button onclick="login()">登录</button>
-  </div>
-</div>
-
-<div id="chatContainer" style="display: none;">
-  <div id="userInfo">
-    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像">
-    <span id="userName">用户</span>
-  </div>
-
-  <div id="chatBox"></div>
-  <input type="text" id="messageInput" placeholder="输入消息">
-</div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
-    authDomain: "kensamawebsite.firebaseapp.com",
-    projectId: "kensamawebsite",
-    storageBucket: "kensamawebsite.appspot.com",
-    messagingSenderId: "33823463857",
-    appId: "1:33823463857:web:477a5078ce99cdd5f78590",
-    measurementId: "G-CVL61HZMY7"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  const nicknameInput = document.getElementById("nickname");
-  const passwordInput = document.getElementById("password");
-
-  function register() {
-    const nickname = nicknameInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
-    const email = `${nickname}@kensama.com`;
-
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(() => alert("注册成功，请登录"))
-      .catch(error => alert("注册失败：" + error.message));
-  }
-
-  function login() {
-    const nickname = nicknameInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
-    const email = `${nickname}@kensama.com`;
-
-    auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        if (nickname === "kensama") {
-          window.location.href = "admin-pro.html";
-        } else {
-          window.location.href = "chat.html";
-        }
-      })
-      .catch(error => alert("登录失败：" + error.message));
-  }
-</script>
-
-</body>
-</html>
