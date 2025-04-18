@@ -1,63 +1,58 @@
+// chat.js
+
+// 使用 Firebase 9 compat 版
 const auth = firebase.auth();
 const db = firebase.firestore();
-let currentUser = null;
 
+const chatBox = document.getElementById("chatBox");
+const messageInput = document.getElementById("messageInput");
+const userName = document.getElementById("userName");
+
+// Kensama 的 UID（你可以在控制台查看对应昵称的 UID）
+const KENSAMA_UID = "Kensama_UID_请替换"; // ⚠️ 替换成你自己的 Kensama UID
+
+// 显示当前用户信息
 auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
+  if (user) {
+    userName.textContent = user.displayName || "用户";
 
-  currentUser = user;
-  const nickname = user.email.split("@")[0];
-  document.getElementById("userName").textContent = nickname;
-
-  db.collection("messages")
-    .orderBy("timestamp")
-    .onSnapshot(snapshot => {
-      const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = "";
-
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-
-        const isBetweenUserAndKensama =
-          (msg.senderNickname === nickname && msg.receiverNickname === "kensama") ||
-          (msg.senderNickname === "kensama" && msg.receiverNickname === nickname);
-
-        if (isBetweenUserAndKensama) {
-          const p = document.createElement("p");
-          p.textContent = msg.text;
-          p.style.textAlign = msg.senderNickname === nickname ? "right" : "left";
-          chatBox.appendChild(p);
-        }
+    // 监听自己和 Kensama 的聊天消息
+    db.collection("privateMessages")
+      .where("participants", "array-contains", user.uid)
+      .orderBy("timestamp")
+      .onSnapshot(snapshot => {
+        chatBox.innerHTML = "";
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          if (
+            (msg.from === user.uid && msg.to === KENSAMA_UID) ||
+            (msg.from === KENSAMA_UID && msg.to === user.uid)
+          ) {
+            const div = document.createElement("div");
+            div.textContent = `${msg.from === user.uid ? "我" : "Kensama"}: ${msg.text}`;
+            chatBox.appendChild(div);
+          }
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
 
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-});
+    // 发送消息（回车发送）
+    messageInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const text = messageInput.value.trim();
+        if (text === "") return;
 
-document.getElementById("messageInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    sendMessage();
+        await db.collection("privateMessages").add({
+          from: user.uid,
+          to: KENSAMA_UID,
+          participants: [user.uid, KENSAMA_UID],
+          text: text,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        messageInput.value = "";
+      }
+    });
   }
 });
-
-function sendMessage() {
-  const input = document.getElementById("messageInput");
-  const text = input.value.trim();
-
-  if (!text || !currentUser) return;
-
-  const nickname = currentUser.email.split("@")[0];
-
-  db.collection("messages").add({
-    text: text,
-    sender: currentUser.uid,
-    senderNickname: nickname,
-    receiverNickname: "kensama",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  input.value = "";
-}
