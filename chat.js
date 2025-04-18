@@ -1,6 +1,5 @@
 // chat.js
 
-// 使用 Firebase 9 compat 版
 const auth = firebase.auth();
 const db = firebase.firestore();
 
@@ -8,41 +7,47 @@ const chatBox = document.getElementById("chatBox");
 const messageInput = document.getElementById("messageInput");
 const userName = document.getElementById("userName");
 
-// Kensama 的 UID（你可以在控制台查看对应昵称的 UID）
-const KENSAMA_UID = "Kensama_UID_请替换"; // ⚠️ 替换成你自己的 Kensama UID
+// Kensama 的 UID（查出来的是这个）
+const KENSAMA_UID = "G2Lx6MrB8gSUcUbkUSpt5qk7BTA3";
 
-// 显示当前用户信息
+// 等用户登录后再处理
 auth.onAuthStateChanged(user => {
-  if (user) {
-    userName.textContent = user.displayName || "用户";
+  if (!user) return;
 
-    // 监听自己和 Kensama 的聊天消息
-    db.collection("privateMessages")
-      .where("participants", "array-contains", user.uid)
-      .orderBy("timestamp")
-      .onSnapshot(snapshot => {
-        chatBox.innerHTML = "";
-        snapshot.forEach(doc => {
-          const msg = doc.data();
-          if (
-            (msg.from === user.uid && msg.to === KENSAMA_UID) ||
-            (msg.from === KENSAMA_UID && msg.to === user.uid)
-          ) {
-            const div = document.createElement("div");
-            div.textContent = `${msg.from === user.uid ? "我" : "Kensama"}: ${msg.text}`;
-            chatBox.appendChild(div);
-          }
-        });
-        chatBox.scrollTop = chatBox.scrollHeight;
+  userName.textContent = user.displayName || "用户";
+
+  // 监听与 Kensama 的消息
+  db.collection("privateMessages")
+    .where("participants", "array-contains", user.uid)
+    .orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      chatBox.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+
+        // 只显示自己和 Kensama 的消息
+        if (
+          (msg.from === user.uid && msg.to === KENSAMA_UID) ||
+          (msg.from === KENSAMA_UID && msg.to === user.uid)
+        ) {
+          const div = document.createElement("div");
+          div.textContent = `${msg.from === user.uid ? "我" : "Kensama"}: ${msg.text}`;
+          chatBox.appendChild(div);
+        }
       });
 
-    // 发送消息（回车发送）
-    messageInput.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const text = messageInput.value.trim();
-        if (text === "") return;
+      // 滚动到底部
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
 
+  // 发送消息（回车键）
+  messageInput.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if (text === "") return;
+
+      try {
         await db.collection("privateMessages").add({
           from: user.uid,
           to: KENSAMA_UID,
@@ -52,7 +57,10 @@ auth.onAuthStateChanged(user => {
         });
 
         messageInput.value = "";
+      } catch (err) {
+        console.error("消息发送失败:", err);
+        alert("消息发送失败，请检查控制台");
       }
-    });
-  }
+    }
+  });
 });
