@@ -1,8 +1,10 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <title>Kensama 聊天系统</title>
 
-  <!-- ✅ 加上外部样式文件 -->
+  <!-- 引入黑色主题样式 -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Firebase CDN -->
@@ -10,51 +12,19 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-  <!-- ✅ 保留你原来的 style（可选合并到 style.css） -->
-  <style>
-    body {
-      background-color: #111;
-      color: white;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
-
-    #chatBox {
-      width: 60%;
-      height: 300px;
-      border: 1px solid #ccc;
-      background-color: #222;
-      padding: 10px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      white-space: pre-wrap;
-    }
-
-    input {
-      padding: 10px;
-      font-size: 16px;
-      margin: 5px;
-      background-color: black;
-      color: white;
-      border: 1px solid #999;
-    }
-
-    #userInfo {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-    }
-
-    #userInfo img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-  </style>
+  <!-- 初始化配置和登录逻辑 -->
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
 </head>
+<body>
+  <div id="authContainer">
+    <h2>Kensama 聊天系统</h2>
+    <input type="text" id="nickname" placeholder="昵称（将转小写）">
+    <input type="password" id="password" placeholder="密码">
+    <div>
+      <button onclick="register()">注册</button>
+      <button onclick="login()">登录</button>
+    </div>
+  </div>
+</body>
+</html>
