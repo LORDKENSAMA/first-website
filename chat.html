@@ -1,66 +1,32 @@
-<!-- chat.html -->
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>用户聊天 - Kensama</title>
-  <script type="module" src="chat.js"></script>
-  <style>
-    body {
-      background-color: #111;
-      color: white;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-    }
+  <title>聊天页面 - Kensama</title>
 
-    #chatBox {
-      width: 70%;
-      height: 300px;
-      border: 1px solid #ccc;
-      background-color: #222;
-      padding: 10px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      white-space: pre-wrap;
-    }
+  <!-- 引入自定义样式 -->
+  <link rel="stylesheet" href="style.css">
 
-    input {
-      padding: 10px;
-      font-size: 16px;
-      margin: 5px;
-      background-color: black;
-      color: white;
-      border: 1px solid #999;
-    }
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-    #userInfo {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-    }
-
-    #userInfo img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-  </style>
+  <!-- 引入聊天逻辑 -->
+  <script src="firebase-config.js"></script>
+  <script src="chat.js"></script>
 </head>
 <body>
+  <!-- 用户信息显示 -->
   <div id="userInfo">
     <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像">
     <span id="userName">用户</span>
   </div>
 
-  <h2>与 Kensama 的对话</h2>
-
-  <div id="chatBox"></div>
-  <input type="text" id="messageInput" placeholder="输入消息，按 Enter 发送">
+  <!-- 聊天框 -->
+  <div id="chatContainer">
+    <div id="chatBox"></div>
+    <input type="text" id="messageInput" placeholder="输入消息后按回车发送">
+  </div>
 </body>
 </html>
