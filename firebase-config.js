@@ -1,4 +1,3 @@
-// firebase-config.js
 const firebaseConfig = {
   apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
   authDomain: "kensamawebsite.firebaseapp.com",
