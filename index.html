@@ -4,17 +4,13 @@
   <meta charset="UTF-8">
   <title>Kensama 聊天系统</title>
 
-  <!-- 引入黑色主题样式 -->
+  <!-- 黑色主题样式 -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
-  <!-- 初始化配置和登录逻辑 -->
-  <script src="firebase-config.js"></script>
-  <script src="auth.js"></script>
 </head>
 <body>
   <div id="authContainer">
@@ -25,6 +21,11 @@
       <button onclick="register()">注册</button>
       <button onclick="login()">登录</button>
     </div>
+    <p id="error" style="color: red;"></p>
   </div>
+
+  <!-- 放到底部，确保 DOM 加载完成后再执行 JS -->
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
 </body>
 </html>
