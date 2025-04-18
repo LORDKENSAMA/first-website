@@ -1,4 +1,4 @@
-// admin-pro.js - 昨晚版本，读取 messages 集合
+// admin-pro.js - 昨晚原始版本
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
@@ -29,17 +29,12 @@ window.addEventListener("DOMContentLoaded", () => {
   let selectedUser = null;
   let unsubscribe = null;
 
-  // 监听所有发给 Kensama 的用户
-  const userQuery = query(
-    collection(db, "messages"),
-    where("receiver", "==", KENSAMA_UID)
-  );
-
+  const userQuery = query(collection(db, "messages"));
   onSnapshot(userQuery, snapshot => {
     const users = new Set();
     snapshot.forEach(doc => {
       const msg = doc.data();
-      if (msg.sender !== KENSAMA_UID) {
+      if (msg.receiver === KENSAMA_UID && msg.sender !== KENSAMA_UID) {
         users.add(msg.sender);
       }
     });
@@ -54,7 +49,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 加载聊天记录
   function loadChat(user) {
     selectedUser = user;
     chatTitle.textContent = `与 ${user} 的对话`;
@@ -85,7 +79,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 发送消息
   async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || !selectedUser) return;
@@ -93,7 +86,7 @@ window.addEventListener("DOMContentLoaded", () => {
     await addDoc(collection(db, "messages"), {
       sender: KENSAMA_UID,
       receiver: selectedUser,
-      text,
+      text: text,
       timestamp: new Date()
     });
 
