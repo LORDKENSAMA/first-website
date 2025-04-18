@@ -1,21 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  where,
-  onSnapshot,
-  orderBy,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+// chat.js - module 版本
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// Your Firebase config
+// ✅ Firebase 配置（根据你的 firebase-config.js）
 const firebaseConfig = {
   apiKey: "AIzaSyCUvPZM7a7ciEvAMB1kDudc6ROnoWPGqvg",
   authDomain: "kensamawebsite.firebaseapp.com",
@@ -26,77 +14,63 @@ const firebaseConfig = {
   measurementId: "G-CVL61HZMY7"
 };
 
+// 初始化 Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Kensama 的 UID
-const KENSAMA_UID = "z1C1FFoA6ySZIGfCeHF2swlAUQM2";
+// 获取 DOM 元素
+const chatBox = document.getElementById("chatBox");
+const messageInput = document.getElementById("messageInput");
+const userName = document.getElementById("userName");
 
-// 登录状态变化时触发
-onAuthStateChanged(auth, (user) => {
+let currentUser = null;
+
+// 监听用户登录状态
+onAuthStateChanged(auth, async (user) => {
   if (user) {
-    document.getElementById("user-info").textContent = `已登录：${user.displayName || user.email}`;
-    loadMessages(user);
-    setupSendMessage(user);
+    currentUser = user;
+    userName.textContent = user.displayName || user.email;
+
+    // 加载与 Kensama 的聊天记录
+    const messagesRef = collection(db, "messages");
+    const q = query(messagesRef, orderBy("timestamp"));
+
+    onSnapshot(q, (snapshot) => {
+      chatBox.innerHTML = ""; // 清空旧消息
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        // 只显示自己和 Kensama 的消息
+        if (
+          (data.senderName === user.uid && data.receiverName === "z1C1FFoA6ySZIGfCeHF2swlAUQM2") ||
+          (data.senderName === "z1C1FFoA6ySZIGfCeHF2swlAUQM2" && data.receiverName === user.uid)
+        ) {
+          const div = document.createElement("div");
+          div.textContent = `${data.senderDisplayName || data.senderName}: ${data.text}`;
+          chatBox.appendChild(div);
+        }
+      });
+
+      // 自动滚到底部
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
   } else {
-    window.location.href = "index.html"; // 未登录，跳转回登录页
+    alert("请先登录！");
+    window.location.href = "index.html"; // 未登录跳转回登录页
   }
 });
 
 // 发送消息
-function setupSendMessage(user) {
-  const sendBtn = document.getElementById("sendBtn");
-  const messageInput = document.getElementById("messageInput");
-
-  sendBtn.addEventListener("click", async () => {
+messageInput.addEventListener("keypress", async (e) => {
+  if (e.key === "Enter" && messageInput.value.trim() !== "") {
     const text = messageInput.value.trim();
-    if (text === "") return;
-
-    try {
-      await addDoc(collection(db, "messages"), {
-        text,
-        senderId: user.uid,
-        receiverId: KENSAMA_UID,
-        timestamp: serverTimestamp()
-      });
-      messageInput.value = "";
-    } catch (error) {
-      console.error("发送失败：", error);
-    }
-  });
-}
-
-// 加载消息（只显示和 Kensama 的对话）
-function loadMessages(user) {
-  const messagesRef = collection(db, "messages");
-  const q = query(
-    messagesRef,
-    where("senderId", "in", [user.uid, KENSAMA_UID]),
-    orderBy("timestamp")
-  );
-
-  const chatBox = document.getElementById("chatBox");
-
-  onSnapshot(q, (snapshot) => {
-    chatBox.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (
-        (data.senderId === user.uid && data.receiverId === KENSAMA_UID) ||
-        (data.senderId === KENSAMA_UID && data.receiverId === user.uid)
-      ) {
-        const msg = document.createElement("div");
-        msg.textContent = `${data.senderId === user.uid ? "我" : "Kensama"}: ${data.text}`;
-        chatBox.appendChild(msg);
-      }
+    await addDoc(collection(db, "messages"), {
+      text,
+      timestamp: new Date(),
+      senderName: currentUser.uid,
+      senderDisplayName: currentUser.displayName || currentUser.email,
+      receiverName: "z1C1FFoA6ySZIGfCeHF2swlAUQM2", // 始终发给 Kensama
     });
-  });
-}
-
-// 登出按钮
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  signOut(auth).then(() => {
-    window.location.href = "index.html";
-  });
+    messageInput.value = "";
+  }
 });
