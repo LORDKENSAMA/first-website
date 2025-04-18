@@ -1,28 +1,25 @@
+<!-- chat.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <title>聊天页面 - Kensama</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Firebase SDK（模块化版本请用10+，你也可以改用 compat） -->
-  <script type="module" src="chat.js" defer></script>
 </head>
 <body>
   <!-- 用户信息显示 -->
-  <div id="userInfo" style="display: flex; align-items: center; margin-bottom: 10px;">
-    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-    <span id="user-info">用户</span>
-    <button id="logoutBtn" style="margin-left: auto;">登出</button>
+  <div id="userInfo">
+    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像">
+    <span id="userName">用户</span>
   </div>
 
   <!-- 聊天界面 -->
   <div id="chatContainer">
-    <div id="chatBox" style="height: 300px; overflow-y: auto; border: 1px solid #555; padding: 10px; margin-bottom: 10px;"></div>
-    <div style="display: flex;">
-      <input type="text" id="messageInput" placeholder="输入消息..." style="flex: 1; padding: 8px;">
-      <button id="sendBtn" style="margin-left: 10px;">发送</button>
-    </div>
+    <div id="chatBox" style="height: 300px; overflow-y: auto; border: 1px solid #555; padding: 10px;"></div>
+    <input type="text" id="messageInput" placeholder="输入消息后按回车发送">
   </div>
+
+  <!-- ✅ 使用模块化写法加载 chat.js -->
+  <script type="module" src="chat.js"></script>
 </body>
 </html>
