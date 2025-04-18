@@ -13,7 +13,7 @@
 
   <!-- Firebase 配置与聊天逻辑 -->
   <script src="firebase-config.js"></script>
-  <script src="chat.js"></script>
+  <script src="chat.js" defer></script>
 </head>
 <body>
   <!-- 用户信息显示 -->
@@ -24,7 +24,7 @@
 
   <!-- 聊天界面 -->
   <div id="chatContainer">
-    <div id="chatBox"></div>
+    <div id="chatBox" style="height: 300px; overflow-y: auto; border: 1px solid #555; padding: 10px;"></div>
     <input type="text" id="messageInput" placeholder="输入消息后按回车发送">
   </div>
 </body>
