@@ -1,4 +1,4 @@
-// admin-pro.js - 支持 Firestore "messages" 集合，管理员实时聊天界面
+// admin-pro.js - 昨晚版本，读取 messages 集合
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
@@ -25,11 +25,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
 
-  const KENSAMA_UID = "z1C1FFoA6ySZIGfCeHF2swlAUQM2"; // Kensama 的 UID
+  const KENSAMA_UID = "z1C1FFoA6ySZIGfCeHF2swlAUQM2";
   let selectedUser = null;
   let unsubscribe = null;
 
-  // ✅ 实时监听所有发给 Kensama 的消息，提取发件人 UID 列表
+  // 监听所有发给 Kensama 的用户
   const userQuery = query(
     collection(db, "messages"),
     where("receiver", "==", KENSAMA_UID)
@@ -44,7 +44,6 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 更新用户列表
     userUl.innerHTML = "";
     users.forEach(user => {
       const li = document.createElement("li");
@@ -55,7 +54,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 💬 加载与选中用户的聊天记录
+  // 加载聊天记录
   function loadChat(user) {
     selectedUser = user;
     chatTitle.textContent = `与 ${user} 的对话`;
@@ -86,7 +85,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✉️ 发送消息
+  // 发送消息
   async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || !selectedUser) return;
@@ -94,7 +93,7 @@ window.addEventListener("DOMContentLoaded", () => {
     await addDoc(collection(db, "messages"), {
       sender: KENSAMA_UID,
       receiver: selectedUser,
-      text: text,
+      text,
       timestamp: new Date()
     });
 
