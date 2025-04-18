@@ -1,4 +1,4 @@
-// admin-pro.js - 完整修复：支持 Enter，实时刷新，自动滚动
+// admin-pro.js - 兼容 Firestore "messages" 集合，支持实时聊天
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import {
   getFirestore, collection, query, where,
@@ -25,19 +25,18 @@ window.addEventListener("DOMContentLoaded", () => {
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
 
+  const KENSAMA_UID = "z1C1FFoA6ySZIGfCeHF2swlAUQM2";
   let selectedUser = null;
   let unsubscribe = null;
 
   // 实时监听所有发给 Kensama 的用户
-  const userQuery = query(collection(db, "privateMessages"));
+  const userQuery = query(collection(db, "messages"));
   onSnapshot(userQuery, snapshot => {
     const users = new Set();
     snapshot.forEach(doc => {
       const msg = doc.data();
-      const receiver = msg.receiver?.toLowerCase();
-      const sender = msg.sender?.toLowerCase();
-      if (receiver === "kensama" && sender !== "kensama") {
-        users.add(sender);
+      if (msg.receiver === KENSAMA_UID && msg.sender !== KENSAMA_UID) {
+        users.add(msg.sender);
       }
     });
 
@@ -51,7 +50,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 加载对话记录
+  // 加载与某用户的对话
   function loadChat(user) {
     selectedUser = user;
     chatTitle.textContent = `与 ${user} 的对话`;
@@ -60,9 +59,9 @@ window.addEventListener("DOMContentLoaded", () => {
     if (unsubscribe) unsubscribe();
 
     const chatQuery = query(
-      collection(db, "privateMessages"),
-      where("sender", "in", [user, "kensama"]),
-      where("receiver", "in", [user, "kensama"]),
+      collection(db, "messages"),
+      where("sender", "in", [user, KENSAMA_UID]),
+      where("receiver", "in", [user, KENSAMA_UID]),
       orderBy("timestamp")
     );
 
@@ -71,8 +70,8 @@ window.addEventListener("DOMContentLoaded", () => {
       snapshot.forEach(doc => {
         const msg = doc.data();
         const div = document.createElement("div");
-        div.className = "message " + (msg.sender === "kensama" ? "self" : "other");
-        div.textContent = msg.message;
+        div.className = "message " + (msg.sender === KENSAMA_UID ? "self" : "other");
+        div.textContent = msg.text;
         messagesDiv.appendChild(div);
       });
 
@@ -82,25 +81,23 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 发送消息函数
+  // 发送消息
   async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || !selectedUser) return;
 
-    await addDoc(collection(db, "privateMessages"), {
-      sender: "kensama",
+    await addDoc(collection(db, "messages"), {
+      sender: KENSAMA_UID,
       receiver: selectedUser,
-      message: text,
+      text: text,
       timestamp: new Date()
     });
 
     messageInput.value = "";
   }
 
-  // 点击按钮发送
   sendBtn.onclick = sendMessage;
 
-  // 按 Enter 发送
   messageInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
