@@ -1,53 +1,39 @@
-// auth.js
-
 const auth = firebase.auth();
+const db = firebase.firestore();
 
-// 获取输入框元素
-const nicknameInput = document.getElementById("nickname");
-const passwordInput = document.getElementById("password");
-
-// 注册函数
-function register() {
-  const nickname = nicknameInput.value.trim().toLowerCase();
-  const password = passwordInput.value;
-
-  if (!nickname || !password) {
-    alert("请输入昵称和密码");
-    return;
-  }
-
-  const email = `${nickname}@kensama.com`; // 构造虚拟邮箱
+document.getElementById("register").addEventListener("click", () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const nickname = document.getElementById("nickname").value;
 
   auth.createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      alert("注册成功，请点击登录");
+    .then((userCredential) => {
+      return userCredential.user.updateProfile({ displayName: nickname });
     })
-    .catch(error => {
-      alert("注册失败：" + error.message);
+    .then(() => {
+      alert("注册成功");
+    })
+    .catch((error) => {
+      console.error("注册错误:", error);
     });
-}
+});
 
-// 登录函数
-function login() {
-  const nickname = nicknameInput.value.trim().toLowerCase();
-  const password = passwordInput.value;
-
-  if (!nickname || !password) {
-    alert("请输入昵称和密码");
-    return;
-  }
-
-  const email = `${nickname}@kensama.com`;
+document.getElementById("login").addEventListener("click", () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      if (nickname === "kensama") {
+    .then((userCredential) => {
+      const user = userCredential.user;
+      const nickname = user.displayName;
+
+      if (nickname && nickname.toLowerCase() === "kensama") {
         window.location.href = "admin-pro.html";
       } else {
         window.location.href = "chat.html";
       }
     })
-    .catch(error => {
-      alert("登录失败：" + error.message);
+    .catch((error) => {
+      console.error("登录错误:", error);
     });
-}
+});
