@@ -4,21 +4,27 @@
   <meta charset="UTF-8">
   <title>聊天页面 - Kensama</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase 配置与聊天逻辑 -->
+  <script src="firebase-config.js"></script>
+  <script src="chat.js" defer></script>
 </head>
 <body>
-  <!-- 用户信息显示 -->
-  <div id="userInfo">
-    <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="头像">
-    <span id="userName">用户</span>
+  <!-- 用户信息和登出按钮 -->
+  <div id="user-info" style="margin-bottom: 10px;">
+    <span id="user-name">用户</span>
+    <button id="logoutBtn">登出</button>
   </div>
 
-  <!-- 聊天界面 -->
+  <!-- 聊天区域 -->
   <div id="chatContainer">
-    <div id="chatBox" style="height: 300px; overflow-y: auto; border: 1px solid #555; padding: 10px;"></div>
+    <div id="chatBox" style="height: 300px; overflow-y: auto; border: 1px solid #555; padding: 10px; margin-bottom: 10px;"></div>
     <input type="text" id="messageInput" placeholder="输入消息后按回车发送">
   </div>
-
-  <!-- ✅ 用 module 模式加载 chat.js（新版写法） -->
-  <script type="module" src="chat.js"></script>
 </body>
 </html>
